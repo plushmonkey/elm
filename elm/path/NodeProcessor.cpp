@@ -27,10 +27,11 @@ EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
   bool north = false;
   bool south = false;
 
+  bool* setters[8] = {&north, &south, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   bool* requirements[8] = {nullptr, nullptr, nullptr, nullptr, &north, &north, &south, &south};
-  CoordOffset neighbors[8] = {CoordOffset::North(),     CoordOffset::South(),     CoordOffset::West(),
-                              CoordOffset::East(),      CoordOffset::NorthWest(), CoordOffset::NorthEast(),
-                              CoordOffset::SouthWest(), CoordOffset::SouthEast()};
+  static const CoordOffset neighbors[8] = {CoordOffset::North(),     CoordOffset::South(),     CoordOffset::West(),
+                                           CoordOffset::East(),      CoordOffset::NorthWest(), CoordOffset::NorthEast(),
+                                           CoordOffset::SouthWest(), CoordOffset::SouthEast()};
 
   for (std::size_t i = 0; i < 8; i++) {
     bool* requirement = requirements[i];
@@ -59,10 +60,8 @@ EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
 
     edges.Set(i);
 
-    if (i == 0) {
-      north = true;
-    } else if (i == 1) {
-      south = true;
+    if (setters[i]) {
+      *setters[i] = true;
     }
   }
 

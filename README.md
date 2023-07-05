@@ -2,7 +2,9 @@
 Test application for experimenting with subspace pathfinder.
 
 # Building
+- Open terminal
 - `git clone https://github.com/plushmonkey/elm.git`
+- `cd elm`
 - `git submodule update --init`
 - Open sln and build `x64` Debug or Release.
 

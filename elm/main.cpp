@@ -95,13 +95,25 @@ int main(int argc, char* argv[]) {
 
   printf("Pathfinder::Init::Time: %lluus\n", perf_timer.GetElapsedTime());
 
-  auto start_time = std::chrono::high_resolution_clock::now();
 #if 0  // A lot of pathing for Performance Profile.
-  for (size_t i = 0; i < 1000; ++i) {
-    auto path = pathfinder.FindPath(Vector2f(512, 512), Vector2f(397, 542), ship_radius);
+  constexpr size_t kPathCount = 1000;
+
+  std::vector<u64> timers(kPathCount);
+
+  Timer path_timer;
+  for (size_t i = 0; i < kPathCount; ++i) {
+    auto path = pathfinder.FindPath(path_request.start, path_request.end, kShipRadius);
 
     printf("Path size: %zd\n", path.size());
+    timers[i] = path_timer.GetElapsedTime();
   }
+
+  u64 sum = 0;
+  for (size_t i = 0; i < kPathCount; ++i) {
+    sum += timers[i];
+  }
+  u64 avg = sum / kPathCount;
+  printf("Path avg time: %llu\n", avg);
 #endif
 
   auto path = pathfinder.FindPath(path_request.start, path_request.end, kShipRadius);
