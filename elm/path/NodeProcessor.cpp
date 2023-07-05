@@ -15,6 +15,16 @@ EdgeSet NodeProcessor::FindEdges(Node* node, float radius) {
   // Any extra checks can be done here to remove dynamic edges.
   // if (west bad) edges.Erase(CoordOffset::WestIndex());
 
+#if 1
+  if (node->parent) {
+    // Don't cycle back to parent. This saves a very small amount of time because that node would be ignored anyway.
+    NodePoint parent_point = GetPoint(node->parent);
+    CoordOffset offset(parent_point.x - point.x, parent_point.y - point.y);
+
+    edges.Erase(offset.GetIndex());
+  }
+#endif
+
   return edges;
 }
 
@@ -77,10 +87,9 @@ Node* NodeProcessor::GetNode(NodePoint point) {
   Node* node = &nodes_[index];
 
   if (!(node->flags & NodeFlag_Initialized)) {
-    node->g = node->f = 0.0f;
+    node->g = node->f = node->f_last = 0.0f;
     node->flags = NodeFlag_Initialized | (node->flags & NodeFlag_Traversable);
     node->parent = nullptr;
-    node->weight = 1.0f;
   }
 
   return &nodes_[index];

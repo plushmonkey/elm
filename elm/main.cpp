@@ -21,14 +21,16 @@ struct PathRequest {
   PathRequest(Vector2f start, Vector2f end, Vector2f center) : start(start), end(end), center(center) {}
 };
 
-// PathRequest path_request(Vector2f(512, 512), Vector2f(397, 542), Vector2f(512, 512));  // Center
+//PathRequest path_request(Vector2f(512, 512), Vector2f(397, 542), Vector2f(512, 512));  // Center
 PathRequest path_request(Vector2f(828, 341), Vector2f(820, 210), Vector2f(830, 265));  // Base 1
-// PathRequest path_request(Vector2f(265, 565), Vector2f(155, 585), Vector2f(155, 585));  // Base 6
+//PathRequest path_request(Vector2f(265, 565), Vector2f(155, 585), Vector2f(155, 585));  // Base 6
 
 const bool kEnableLinearWeights = true;
 
 const float kShipRadius = 14.0f / 16.0f;
 //float kShipRadius = 39.0f / 16.0f;
+
+#define PERFORMANCE_PROFILE 0
 
 int main(int argc, char* argv[]) {
   Timer perf_timer;
@@ -95,7 +97,7 @@ int main(int argc, char* argv[]) {
 
   printf("Pathfinder::Init::Time: %lluus\n", perf_timer.GetElapsedTime());
 
-#if 0  // A lot of pathing for Performance Profile.
+#if PERFORMANCE_PROFILE  // A lot of pathing for Performance Profile.
   constexpr size_t kPathCount = 1000;
 
   std::vector<u64> timers(kPathCount);

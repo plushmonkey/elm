@@ -73,6 +73,13 @@ std::vector<Vector2f> Pathfinder::FindPath(const Vector2f& from, const Vector2f&
 
     node->flags |= NodeFlag_Closed;
 
+    if (node->f > 0 && node->f == node->f_last) {
+      // This node was re-added to the openset because its fitness was better, so skip reprocessing the same node.
+      // This reduces pathing time by about 20%.
+      continue;
+    }
+    node->f_last = node->f;
+
     NodePoint node_point = processor_->GetPoint(node);
 
     // returns neighbor nodes that are not solid
@@ -106,7 +113,6 @@ std::vector<Vector2f> Pathfinder::FindPath(const Vector2f& from, const Vector2f&
         edge->g = cost;
         edge->f = edge->g + h;
         edge->parent = node;
-
         edge->flags |= NodeFlag_Openset;
 
         openset_.Push(edge);

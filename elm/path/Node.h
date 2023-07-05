@@ -27,15 +27,16 @@ typedef u32 NodeFlags;
 
 struct Node {
   Node* parent;
-
   u32 flags;
 
   float g;
   float f;
+  // This is the fitness value of the node when it was last processed.
+  float f_last;
 
   float weight;
 
-  Node() : flags(0), parent(nullptr), g(0.0f), f(0.0f), weight(1.0f) {}
+  Node() : flags(0), parent(nullptr), g(0.0f), f(0.0f), f_last(0.0f), weight(1.0f) {}
 };
 
 }  // namespace path
