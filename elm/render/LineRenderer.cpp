@@ -72,13 +72,17 @@ void LineRenderer::PushLine(const Vector2f& start, const Vector3f& start_color, 
 }
 
 void LineRenderer::PushCross(const Vector2f& start, const Vector3f& color, float size) {
+  float radius = size * 0.5f;
+
   Vector2f top_left = start;
   Vector2f top_right(start.x + size, start.y);
   Vector2f bottom_left(start.x, start.y + size);
   Vector2f bottom_right(start.x + size, start.y + size);
 
-  PushLine(top_left, color, bottom_right, color);
-  PushLine(bottom_left, color, top_right, color);
+  Vector2f r(radius, radius);
+
+  PushLine(top_left - r, color, bottom_right - r, color);
+  PushLine(bottom_left - r, color, top_right - r, color);
 }
 
 void LineRenderer::Render(Camera& camera, bool clear_lines) {

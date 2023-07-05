@@ -76,6 +76,8 @@ int main(int argc, char* argv[]) {
 
   Elm elm(window, Vector2f((float)width, (float)height));
 
+  glfwSetWindowUserPointer(window, &elm);
+
   if (!elm.Initialize(kMapFilename, *map)) {
     fprintf(stderr, "Failed to initialize elm.\n");
     return 1;
@@ -118,17 +120,15 @@ int main(int argc, char* argv[]) {
   printf("Path avg time: %llu\n", avg);
 #endif
 
-  auto path = pathfinder.FindPath(path_request.start, path_request.end, kShipRadius);
+  elm.path = pathfinder.FindPath(path_request.start, path_request.end, kShipRadius);
 
   printf("Pathfinder::FindPath::Time: %lluus\n", perf_timer.GetElapsedTime());
 
+  elm.path_start = path_request.start;
+  elm.path_end = path_request.end;
   elm.camera.position = path_request.center;
-
-  if (!path.empty()) {
-    for (size_t i = 0; i < path.size() - 1; ++i) {
-      elm.line_renderer.PushLine(path[i], Vector3f(1.0f, 0.0f, 0.0f), path[i + 1], Vector3f(1.0f, 0.0f, 0.0f));
-    }
-  }
+  elm.pathfinder = &pathfinder;
+  elm.ship_radius = kShipRadius;
 
   while (!glfwWindowShouldClose(window)) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    elm.Render(false);
+    elm.Render(true);
 
     glfwSwapBuffers(window);
 

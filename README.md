@@ -14,6 +14,8 @@ Setup map, ship radius, and path request in `main.cpp`.
 ## Mouse
 Click and drag around to move the map.  
 Use scroll wheel to zoom in and out.  
+Right click to set path start node.  
+Shift-right click to set path end node.   
 
 ## Keyboard
 Use arrow keys to move around if you don't want to use a mouse.  

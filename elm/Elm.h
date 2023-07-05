@@ -4,6 +4,7 @@
 #include <elm/render/Camera.h>
 #include <elm/render/LineRenderer.h>
 #include <elm/render/MapRenderer.h>
+#include <elm/path/Pathfinder.h>
 
 struct GLFWwindow;
 
@@ -20,6 +21,12 @@ struct Elm {
   render::LineRenderer line_renderer;
   DragState drag;
   GLFWwindow* window;
+  path::Pathfinder* pathfinder;
+  std::vector<Vector2f> path;
+  float ship_radius;
+
+  Vector2f path_start;
+  Vector2f path_end;
 
   Elm(GLFWwindow* window, const Vector2f& surface_dim)
       : window(window), camera(surface_dim, Vector2f(512, 512), 1.0f / 16.0f) {}

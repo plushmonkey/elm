@@ -1,6 +1,7 @@
 #include "Elm.h"
 
 #include <GLFW/glfw3.h>
+#include <elm/Timer.h>
 
 namespace elm {
 
@@ -18,20 +19,39 @@ void OnMouseScroll(GLFWwindow* window, double dx, double dy) {
 void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
   Elm* elm = (Elm*)glfwGetWindowUserPointer(window);
 
-  double xpos, ypos;
+  double xpos_d, ypos_d;
+
+  glfwGetCursorPos(window, &xpos_d, &ypos_d);
+
+  float xpos = (float)xpos_d;
+  float ypos = (float)ypos_d;
 
   if (button == GLFW_MOUSE_BUTTON_1) {
     if (action == GLFW_PRESS) {
       elm->drag.active = true;
-
-      glfwGetCursorPos(window, &xpos, &ypos);
-
-      elm->drag.start = Vector2f((float)xpos, (float)ypos);
+      elm->drag.start = Vector2f(xpos, ypos);
     } else if (action == GLFW_RELEASE) {
       if (elm->drag.active) {
         elm->drag.active = false;
       }
     }
+  } else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {    
+    Vector2f half_dim = elm->camera.surface_dim * 0.5f;
+
+    Vector2f input(xpos - half_dim.x, ypos - half_dim.y);
+
+    float x = elm->camera.position.x + input.x * elm->camera.scale;
+    float y = elm->camera.position.y + input.y * elm->camera.scale;
+
+    if (modifier & GLFW_MOD_SHIFT) {
+      elm->path_end = Vector2f(x, y);
+    } else {
+      elm->path_start = Vector2f(x, y);
+    }
+
+    Timer timer;
+    elm->path = elm->pathfinder->FindPath(elm->path_start, elm->path_end, elm->ship_radius);
+    printf("Pathfinder::FindPath::Time: %lluus\n", timer.GetElapsedTime());
   }
 }
 
@@ -54,6 +74,10 @@ bool Elm::Initialize(const char* map_filename, const Map& map) {
   return true;
 }
 
+inline Vector3f FromRGB(u8 r, u8 g, u8 b) {
+  return Vector3f(r / 255.0f, g / 255.0f, b / 255.0f);
+}
+
 void Elm::Render(bool clear_lines) {
   if (drag.active) {
     double xpos, ypos;
@@ -65,6 +89,16 @@ void Elm::Render(bool clear_lines) {
     camera.position -= (current - drag.start) * camera.scale;
 
     drag.start = current;
+  }
+
+  
+  line_renderer.PushCross(path_start, FromRGB(7, 195, 221), 1.5f);
+  line_renderer.PushCross(path_end, FromRGB(251, 237, 20), 1.5f);
+
+  if (!path.empty()) {
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+      line_renderer.PushLine(path[i], Vector3f(1.0f, 0.0f, 0.0f), path[i + 1], Vector3f(1.0f, 0.0f, 0.0f));
+    }
   }
 
   map_renderer.Render(camera);
