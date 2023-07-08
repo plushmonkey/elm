@@ -21,7 +21,7 @@
 
 namespace elm {
 
-constexpr float kPi = M_PI;
+constexpr float kPi = (float)M_PI;
 
 inline constexpr float Radians(float degrees) {
   constexpr float kDegreeToRadians = kPi / 180.0f;

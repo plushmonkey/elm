@@ -34,6 +34,16 @@ struct Camera {
 
     position = Vector2f(x32 / 16.0f, y32 / 16.0f);
   }
+
+  inline Vector2f Unproject(Vector2f screen_coords) {
+    Vector2f half_dim = surface_dim * 0.5f;
+    Vector2f input(screen_coords.x - half_dim.x, screen_coords.y - half_dim.y);
+
+    float x = position.x + input.x * scale;
+    float y = position.y + input.y * scale;
+
+    return Vector2f(x, y);
+  }
 };
 
 }  // namespace render

@@ -85,6 +85,19 @@ void LineRenderer::PushCross(const Vector2f& start, const Vector3f& color, float
   PushLine(bottom_left - r, color, top_right - r, color);
 }
 
+void LineRenderer::PushRect(const Vector2f& start, const Vector2f& end, const Vector3f& color) {
+  Vector2f top_left(start.x, start.y);
+  Vector2f top_right(end.x, start.y);
+  Vector2f bottom_left(start.x, end.y);
+  Vector2f bottom_right(end.x, end.y);
+
+  PushLine(top_left, color, top_right, color);
+  PushLine(top_left, color, bottom_left, color);
+
+  PushLine(bottom_right, color, top_right, color);
+  PushLine(bottom_right, color, bottom_left, color);
+}
+
 void LineRenderer::Render(Camera& camera, bool clear_lines) {
   if (lines.empty()) return;
 

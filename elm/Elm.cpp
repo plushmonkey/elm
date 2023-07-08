@@ -8,12 +8,21 @@ namespace elm {
 void OnMouseScroll(GLFWwindow* window, double dx, double dy) {
   Elm* elm = (Elm*)glfwGetWindowUserPointer(window);
 
+  float old_scale = elm->camera.scale;
   float scale = elm->camera.scale;
   float speed = 1.0f / 10.0f;
 
   scale = scale - (scale * ((float)dy * speed));
 
+  double xpos, ypos;
+  glfwGetCursorPos(window, &xpos, &ypos);
+
+  Vector2f pre_world_pos = elm->camera.Unproject(Vector2f((float)xpos, (float)ypos));
+  Vector2f offset = (pre_world_pos - elm->camera.position) * (1.0f / old_scale);
+
   elm->camera.SetScale(scale);
+
+  elm->camera.position += offset * (old_scale - scale);
 }
 
 void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
@@ -35,18 +44,13 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
         elm->drag.active = false;
       }
     }
-  } else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {    
-    Vector2f half_dim = elm->camera.surface_dim * 0.5f;
-
-    Vector2f input(xpos - half_dim.x, ypos - half_dim.y);
-
-    float x = elm->camera.position.x + input.x * elm->camera.scale;
-    float y = elm->camera.position.y + input.y * elm->camera.scale;
+  } else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {
+    Vector2f world_pos = elm->camera.Unproject(Vector2f(xpos, ypos));
 
     if (modifier & GLFW_MOD_SHIFT) {
-      elm->path_end = Vector2f(x, y);
+      elm->path_end = world_pos;
     } else {
-      elm->path_start = Vector2f(x, y);
+      elm->path_start = world_pos;
     }
 
     Timer timer;
@@ -74,9 +78,7 @@ bool Elm::Initialize(const char* map_filename, const Map& map) {
   return true;
 }
 
-inline Vector3f FromRGB(u8 r, u8 g, u8 b) {
-  return Vector3f(r / 255.0f, g / 255.0f, b / 255.0f);
-}
+inline Vector3f FromRGB(u8 r, u8 g, u8 b) { return Vector3f(r / 255.0f, g / 255.0f, b / 255.0f); }
 
 void Elm::Render(bool clear_lines) {
   if (drag.active) {
@@ -91,9 +93,14 @@ void Elm::Render(bool clear_lines) {
     drag.start = current;
   }
 
-  
-  line_renderer.PushCross(path_start, FromRGB(7, 195, 221), 1.5f);
-  line_renderer.PushCross(path_end, FromRGB(251, 237, 20), 1.5f);
+  Vector2f path_start_box_tl(floorf(path_start.x), floorf(path_start.y));
+  Vector2f path_start_box_br(floorf(path_start.x) + 1.0f, floorf(path_start.y) + 1.0f);
+
+  Vector2f path_end_box_tl(floorf(path_end.x), floorf(path_end.y));
+  Vector2f path_end_box_br(floorf(path_end.x) + 1.0f, floorf(path_end.y) + 1.0f);
+
+  line_renderer.PushRect(path_start_box_tl, path_start_box_br, FromRGB(7, 195, 221));
+  line_renderer.PushRect(path_end_box_tl, path_end_box_br, FromRGB(251, 237, 20));
 
   if (!path.empty()) {
     for (size_t i = 0; i < path.size() - 1; ++i) {
