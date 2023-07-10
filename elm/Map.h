@@ -41,6 +41,13 @@ struct OccupiedRect {
   bool operator==(const OccupiedRect& other) const {
     return start_x == other.start_x && start_y == other.start_y && end_x == other.end_x && end_y == other.end_y;
   }
+
+  inline bool Contains(Vector2f position) const {
+    u16 x = (u16)position.x;
+    u16 y = (u16)position.y;
+
+    return x >= start_x && x <= end_x && y >= start_y && y <= end_y;
+  }
 };
 
 class Map {

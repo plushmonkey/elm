@@ -28,6 +28,58 @@ EdgeSet NodeProcessor::FindEdges(Node* node, float radius) {
   return edges;
 }
 
+inline bool CanOccupy(const Map& map, OccupiedRect& rect, Vector2f offset) {
+  Vector2f min = Vector2f(rect.start_x, rect.start_y) + offset;
+  Vector2f max = Vector2f(rect.end_x, rect.end_y) + offset;
+
+  for (u16 y = (u16)min.y; y <= (u16)max.y; ++y) {
+    for (u16 x = (u16)min.x; x <= (u16)max.x; ++x) {
+      if (map.IsSolid(x, y)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+inline bool CanOccupyAxis(const Map& map, OccupiedRect& rect, Vector2f offset) {
+  Vector2f min = Vector2f(rect.start_x, rect.start_y) + offset;
+  Vector2f max = Vector2f(rect.end_x, rect.end_y) + offset;
+
+  if (offset.x < 0) {
+    // Moving west, so check western section of rect
+    for (u16 y = (u16)min.y; y <= (u16)max.y; ++y) {
+      if (map.IsSolid((u16)min.x, y)) {
+        return false;
+      }
+    }
+  } else if (offset.x > 0) {
+    // Moving east, so check eastern section of rect
+    for (u16 y = (u16)min.y; y <= (u16)max.y; ++y) {
+      if (map.IsSolid((u16)max.x, y)) {
+        return false;
+      }
+    }
+  } else if (offset.y < 0) {
+    // Moving north, so check north section of rect
+    for (u16 x = (u16)min.x; x <= (u16)max.x; ++x) {
+      if (map.IsSolid(x, (u16)min.y)) {
+        return false;
+      }
+    }
+  } else if (offset.y > 0) {
+    // Moving south, so check south section of rect
+    for (u16 x = (u16)min.x; x <= (u16)max.x; ++x) {
+      if (map.IsSolid(x, (u16)max.y)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
   EdgeSet edges = {};
 
@@ -43,6 +95,9 @@ EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
                                            CoordOffset::East(),      CoordOffset::NorthWest(), CoordOffset::NorthEast(),
                                            CoordOffset::SouthWest(), CoordOffset::SouthEast()};
 
+  OccupiedRect occupied[64];
+  size_t occupied_count = map_.GetAllOccupiedRects(Vector2f(base.x, base.y), radius, occupied);
+
   for (std::size_t i = 0; i < 8; i++) {
     bool* requirement = requirements[i];
 
@@ -52,8 +107,37 @@ EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
     uint16_t world_y = base_point.y + neighbors[i].y;
     MapCoord pos(world_x, world_y);
 
-    if (!map_.CanOccupy(Vector2f(world_x, world_y), radius)) {
-      if (!map_.CanMoveTo(base, pos, radius)) {
+    bool is_occupied = false;
+    // Check each occupied rect to see if contains the target position.
+    // The expensive check can be skipped because this spot is definitely occupiable.
+    for (size_t j = 0; j < occupied_count; ++j) {
+      OccupiedRect& rect = occupied[j];
+
+      if (rect.Contains(Vector2f(pos.x, pos.y))) {
+        is_occupied = true;
+        break;
+      }
+    }
+
+    if (!is_occupied) {
+      bool can_occupy = true;
+      Vector2f offset(neighbors[i].x, neighbors[i].y);
+      // Check each occupied rect to see if it can move in this direction
+      for (size_t j = 0; j < occupied_count; ++j) {
+        if (i >= 4) {
+          if (!CanOccupy(map_, occupied[j], offset)) {
+            can_occupy = false;
+            break;
+          }
+        } else {
+          if (!CanOccupyAxis(map_, occupied[j], offset)) {
+            can_occupy = false;
+            break;
+          }
+        }
+      }
+
+      if (!can_occupy) {
         continue;
       }
     }
