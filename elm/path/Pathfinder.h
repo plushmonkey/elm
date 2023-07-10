@@ -57,6 +57,7 @@ struct Pathfinder {
   std::unique_ptr<NodeProcessor> processor_;
   PriorityQueue<Node*, NodeCompare> openset_;
   std::vector<Node*> touched_;
+  std::vector<Vector2f> debug_diagonals_;
 };
 
 }  // namespace path

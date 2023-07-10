@@ -177,6 +177,8 @@ float GetWallDistance(const Map& map, u16 x, u16 y, u16 radius) {
 }
 
 void Pathfinder::CreateMapWeights(const Map& map, float ship_radius, bool linear_weights) {
+  OccupiedRect* scratch_rects = new OccupiedRect[256];
+
   // Calculate which nodes are traversable before creating edges.
   for (u16 y = 0; y < 1024; ++y) {
     for (u16 x = 0; x < 1024; ++x) {
@@ -186,11 +188,24 @@ void Pathfinder::CreateMapWeights(const Map& map, float ship_radius, bool linear
 
       if (map.CanOverlapTile(Vector2f(x, y), ship_radius)) {
         node->flags |= NodeFlag_Traversable;
+
+        size_t rect_count = map.GetAllOccupiedRects(Vector2f(x, y), ship_radius, scratch_rects);
+
+        // This might be a diagonal tile
+        if (rect_count == 2) {
+          // Check if the two occupied rects are offset on both axes.
+          if (scratch_rects[0].start_x != scratch_rects[1].start_x && scratch_rects[0].start_y != scratch_rects[1].start_y) {
+            // This is a diagonal-only tile, so skip it.
+            debug_diagonals_.push_back(Vector2f(x, y));
+
+            node->flags &= ~NodeFlag_Traversable;
+          }
+        }
       }
     }
   }
 
-  processor_->scratch_rects = new OccupiedRect[256];
+  delete[] scratch_rects;
 
   for (u16 y = 0; y < 1024; ++y) {
     for (u16 x = 0; x < 1024; ++x) {
@@ -214,9 +229,6 @@ void Pathfinder::CreateMapWeights(const Map& map, float ship_radius, bool linear
       }
     }
   }
-
-  delete[] processor_->scratch_rects;
-  processor_->scratch_rects = nullptr;
 }
 
 }  // namespace path

@@ -108,7 +108,7 @@ void Elm::Render(bool clear_lines) {
     }
   }
 
-  for (auto&& v : this->pathfinder->processor_->diagonals_) {
+  for (auto&& v : this->pathfinder->debug_diagonals_) {
     line_renderer.PushRect(v, v + Vector2f(1, 1), FromRGB(245, 66, 200));
   }
 
