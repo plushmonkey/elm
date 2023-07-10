@@ -56,6 +56,18 @@ EdgeSet NodeProcessor::CalculateEdges(Node* node, float radius) {
       if (!map_.CanMoveTo(base, pos, radius)) {
         continue;
       }
+
+      size_t rect_count = map_.GetAllOccupiedRects(Vector2f(world_x, world_y), radius, scratch_rects);
+
+      // This might be a diagonal tile
+      if (rect_count == 2) {
+        // Check if the two occupied rects are offset on both axes.
+        if (scratch_rects[0].start_x != scratch_rects[1].start_x && scratch_rects[0].start_y != scratch_rects[1].start_y) {
+          // This is a diagonal-only tile, so skip it.
+          diagonals_.push_back(Vector2f(world_x, world_y));
+          continue;
+        }
+      }
     }
 
     NodePoint current_point(world_x, world_y);

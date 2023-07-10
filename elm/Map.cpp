@@ -39,7 +39,7 @@ OccupyMap CalculateOccupyMap(const Map& map, MapCoord start, float radius) {
   MapCoord offset(start.x - diameter + 1, start.y - diameter + 1);
 
   for (uint16_t x = 0; x < diameter; x++) {
-    for (uint16_t y = 0 + 1; y < diameter; y++) {
+    for (uint16_t y = 0; y < diameter; y++) {
       MapCoord pos(offset.x + x, offset.y + y);
 
       result.set[result.count++] = IsSolidSquare(map, pos, diameter);

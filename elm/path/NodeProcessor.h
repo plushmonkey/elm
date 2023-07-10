@@ -104,6 +104,8 @@ class NodeProcessor {
   }
 
   const Map& map_;
+  OccupiedRect* scratch_rects = nullptr;
+  std::vector<Vector2f> diagonals_;
 
  private:
   std::vector<EdgeSet> edges_;

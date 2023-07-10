@@ -50,7 +50,6 @@ struct Pathfinder {
 
   void CreateMapWeights(const Map& map, float ship_radius, bool linear_weights);
 
- private:
   struct NodeCompare {
     bool operator()(const Node* lhs, const Node* rhs) const { return lhs->f > rhs->f; }
   };

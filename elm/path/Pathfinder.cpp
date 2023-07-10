@@ -190,6 +190,8 @@ void Pathfinder::CreateMapWeights(const Map& map, float ship_radius, bool linear
     }
   }
 
+  processor_->scratch_rects = new OccupiedRect[256];
+
   for (u16 y = 0; y < 1024; ++y) {
     for (u16 x = 0; x < 1024; ++x) {
       if (map.IsSolid(x, y)) continue;
@@ -212,6 +214,9 @@ void Pathfinder::CreateMapWeights(const Map& map, float ship_radius, bool linear
       }
     }
   }
+
+  delete[] processor_->scratch_rects;
+  processor_->scratch_rects = nullptr;
 }
 
 }  // namespace path
