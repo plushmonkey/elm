@@ -47,6 +47,17 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
   } else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {
     Vector2f world_pos = elm->camera.Unproject(Vector2f(xpos, ypos));
 
+    // ELvl test code
+    printf("Regions: ");
+    for (auto& region : elm->map->GetRegions(world_pos)) {
+      printf("%s, ", region->name.data());
+    }
+    printf("\n");
+
+    if (elm->map->InRegion("fr", world_pos)) {
+      printf("Is a flag room.\n");
+    }
+
     if (modifier & GLFW_MOD_SHIFT) {
       elm->path_end = world_pos;
     } else {
@@ -59,8 +70,8 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
   }
 }
 
-bool Elm::Initialize(const char* map_filename, const Map& map) {
-  if (!map_renderer.Initialize(map_filename, map)) {
+bool Elm::Initialize(const char* map_filename, std::unique_ptr<Map> map) {
+  if (!map_renderer.Initialize(map_filename, *map)) {
     return false;
   }
 
@@ -74,6 +85,8 @@ bool Elm::Initialize(const char* map_filename, const Map& map) {
   glfwSetMouseButtonCallback(window, OnMouseButton);
 
   OGLErrorCheck();
+
+  this->map = std::move(map);
 
   return true;
 }

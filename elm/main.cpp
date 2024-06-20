@@ -21,14 +21,14 @@ struct PathRequest {
   PathRequest(Vector2f start, Vector2f end, Vector2f center) : start(start), end(end), center(center) {}
 };
 
-//PathRequest path_request(Vector2f(512, 512), Vector2f(397, 542), Vector2f(512, 512));  // Center
+// PathRequest path_request(Vector2f(512, 512), Vector2f(397, 542), Vector2f(512, 512));  // Center
 PathRequest path_request(Vector2f(828, 341), Vector2f(820, 210), Vector2f(830, 265));  // Base 1
-//PathRequest path_request(Vector2f(265, 565), Vector2f(155, 585), Vector2f(155, 585));  // Base 6
+// PathRequest path_request(Vector2f(265, 565), Vector2f(155, 585), Vector2f(155, 585));  // Base 6
 
 const bool kEnableLinearWeights = true;
 
 const float kShipRadius = 14.0f / 16.0f;
-//float kShipRadius = 39.0f / 16.0f;
+// float kShipRadius = 39.0f / 16.0f;
 
 #define PERFORMANCE_PROFILE 0
 
@@ -68,8 +68,8 @@ int main(int argc, char* argv[]) {
 
   glViewport(0, 0, width, height);
 
-  auto map = Map::Load(kMapFilename);
-  if (!map) {
+  auto map_ = Map::Load(kMapFilename);
+  if (!map_) {
     fprintf(stderr, "Failed to load map '%s'\n", kMapFilename);
     return 1;
   }
@@ -78,10 +78,12 @@ int main(int argc, char* argv[]) {
 
   glfwSetWindowUserPointer(window, &elm);
 
-  if (!elm.Initialize(kMapFilename, *map)) {
+  if (!elm.Initialize(kMapFilename, std::move(map_))) {
     fprintf(stderr, "Failed to initialize elm.\n");
     return 1;
   }
+
+  Map* map = elm.map.get();
 
   printf("Elm::Init::Time: %lluus\n", perf_timer.GetElapsedTime());
 
